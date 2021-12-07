@@ -4,13 +4,21 @@ using UnityEngine;
 
 public class Construction 
 {
-    protected string name;
-    protected int needEnergy, x_size, y_size;
-    protected bool energyControl;
+    public static Construction current;
+
+    public string name;
+    public int giveEnergy, x_size, y_size, totalEnergy;
+    public bool checkEnergy;
+
+    private void Awake()
+    {
+        current = this;
+    }
+
     public Construction()
     {
         this.name = null;
-        this.needEnergy = 0;
+        this.giveEnergy = 0;
         this.x_size = 0;
         this.y_size = 0;
     }
@@ -20,23 +28,24 @@ public class Construction
         this.name = name;
         this.x_size = x_size;
         this.y_size = y_size;
-        this.needEnergy = 0;
+        this.giveEnergy = 0;
     }
 
-    public Construction(string name, int x_size, int y_size, int needEnergy)
+    public Construction(string name, int x_size, int y_size, int giveEnergy)
     {
         this.name = name;
         this.x_size = x_size;
         this.y_size = y_size;
-        this.needEnergy = needEnergy;
+        this.giveEnergy = giveEnergy;
     }
 
-    public Construction(string name, int x_size, int y_size, bool energyControl)
+    public Construction(string name, int x_size, int y_size, bool checkEnergy)
     {
         this.name = name;
         this.x_size = x_size;
         this.y_size = y_size;
-        this.needEnergy = 0;
-        this.energyControl = energyControl;
+        this.giveEnergy = 0;
+        this.checkEnergy = checkEnergy;
     }
+
 }

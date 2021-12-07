@@ -10,6 +10,7 @@ public class Building : MonoBehaviour
 
     int x_size, y_size;
 
+
     private void Awake()
     {
         current = this;
@@ -20,7 +21,10 @@ public class Building : MonoBehaviour
 
     public bool CanBePlaced()
     {
-        Vector3Int positionInt = GridBuildingSystem.current.gridLayout.LocalToCell(new Vector3(transform.position.x -1, transform.position.y -1, transform.position.z));
+        PositionControl();
+        x_size = GridBuildingSystem.current.x_size;
+        y_size = GridBuildingSystem.current.y_size;
+        Vector3Int positionInt = GridBuildingSystem.current.gridLayout.LocalToCell(new Vector3(transform.position.x - x_size, transform.position.y - y_size, transform.position.z));
         BoundsInt areaTemp = area;
         areaTemp.position = positionInt;
 
@@ -33,7 +37,8 @@ public class Building : MonoBehaviour
 
     public void Place()
     {
-        Vector3Int positionInt = GridBuildingSystem.current.gridLayout.LocalToCell(new Vector3(transform.position.x -1, transform.position.y -1, transform.position.z));
+        PositionControl();
+        Vector3Int positionInt = GridBuildingSystem.current.gridLayout.LocalToCell(new Vector3(transform.position.x - x_size, transform.position.y - y_size, transform.position.z));
         BoundsInt areaTemp = area;
         areaTemp.position = positionInt;
         Placed = true;
@@ -41,5 +46,24 @@ public class Building : MonoBehaviour
     }
 
     #endregion
-
+    public void PositionControl()
+    {
+        if ((transform.position.x / 2) > 1)
+        {
+            x_size = 1;
+        }
+        else
+        {
+            x_size = 0;
+        }
+        if ((transform.position.y / 2) > 1)
+        {
+            y_size = 1;
+        }
+        else
+        {
+            y_size = 0;
+        }
+        
+    }
 }

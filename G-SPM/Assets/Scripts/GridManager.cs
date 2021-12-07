@@ -7,14 +7,19 @@ public class GridManager : MonoBehaviour
 {
     public Tilemap tilemap;
     public Tilemap roadMap;
-    //public TileBase roadTile;
+    public TileBase roadTile, whiteTile;
     public Vector3Int[,] spots;
     Astar astar;
     List<Spot> roadPath = new List<Spot>();
     new Camera camera;
     BoundsInt bounds;
+    private Building temp;
 
     public GameObject soldierSelect;
+
+    public Rigidbody2D rbSoldier;
+
+    private static Dictionary<TileType, TileBase> tileBases = new Dictionary<TileType, TileBase>();
 
     void Start()
     {
@@ -45,23 +50,27 @@ public class GridManager : MonoBehaviour
             }
         }
     }
-    /*private void DrawRoad()
+    private void DrawRoad()
     {
         for (int i = 0; i < roadPath.Count; i++)
         {
             roadMap.SetTile(new Vector3Int(roadPath[i].X, roadPath[i].Y, 0), roadTile);
         }
-    }*/
-    // Update is called once per frame
+    }
+    
     public Vector2Int start;
     void Update()
     {
+        CreateGrid();
+        astar = new Astar(spots, bounds.size.x, bounds.size.y);
+
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         if (Input.GetMouseButton(0))
         {
             Vector3 world = camera.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int gridPos = tilemap.WorldToCell(world);
+
             start = new Vector2Int(gridPos.x, gridPos.y);
 
             Collider2D targetObject = Physics2D.OverlapPoint(mousePosition);
@@ -70,40 +79,62 @@ public class GridManager : MonoBehaviour
             {
                 Debug.Log("Target Object is true");
                 soldierSelect = targetObject.transform.gameObject;
+                if (soldierSelect.tag == "Soldier")
+                {
+                    rbSoldier = soldierSelect.GetComponent<Rigidbody2D>();
+                }
             }
         }
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1) && soldierSelect.tag == "Soldier")
         {
             CreateGrid();
 
             Vector3 world = camera.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int gridPos = tilemap.WorldToCell(world);
 
+            soldierSelect.transform.position = new Vector3(gridPos.x, gridPos.y, soldierSelect.transform.position.z);
+
+            
             if (roadPath != null && roadPath.Count > 0)
                 roadPath.Clear();
 
             roadPath = astar.CreatePath(spots, start, new Vector2Int(gridPos.x, gridPos.y), 1000);
             if (roadPath == null)
                 return;
-
-            StartCoroutine(SoldierMovement());
+            DrawRoad();
+            StartCoroutine(DeleteTiles());
             start = new Vector2Int(roadPath[0].X, roadPath[0].Y);
+            roadMap.SetTile(new Vector3Int(roadPath[0].X, roadPath[0].Y, 0), whiteTile);
 
             GridBuildingSystem.current.FollowBuilding();
         }
     }
-
-    IEnumerator SoldierMovement()
+    
+    IEnumerator DeleteTiles()
     {
+        Debug.Log("DeleteTiles girildi");
+        yield return new WaitForSeconds(2f);
+        Debug.Log("2 saniye bekledi");
+        StartCoroutine(RemoveTiles());
+        
+        Debug.Log("RemoveTiles çalýþtýrýldý");
+    }
+
+    IEnumerator RemoveTiles()
+    {
+        Debug.Log("RemoveTiles girdi");
         for (int i = 0; i < roadPath.Count; i++)
         {
-            soldierSelect.transform.position = new Vector3Int(roadPath[i].X, roadPath[i].Y, 0);
-            Debug.Log("Road: " + roadPath.Count);
-            Debug.Log("X: " + roadPath[i].X);
-            Debug.Log("Y: " + roadPath[i].Y);
-            //roadMap.SetTile(new Vector3Int(roadPath[i].X, roadPath[i].Y, 0), roadTile);
-            
+            Debug.Log("Döngüye girildi");
+            roadMap.SetTile(new Vector3Int(roadPath[i].X, roadPath[i].Y, 0), null);
+            yield return null;
         }
-        yield return new WaitForSeconds(1f);
+        Debug.Log("Döngüden çýktý");
+        
     }
+}
+
+public enum TileControl
+{
+    White
 }

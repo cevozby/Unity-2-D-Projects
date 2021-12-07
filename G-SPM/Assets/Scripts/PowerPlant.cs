@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class Barrack : Construction
+public class PowerPlant : Construction
 {
-    public Barrack(string name, int x_size, int y_size, bool checkEnergy)
+    public PowerPlant(string name, int x_size, int y_size, int giveEnergy)
     {
         this.name = name;
         this.x_size = x_size;
         this.y_size = y_size;
-        this.checkEnergy = checkEnergy;
+        this.giveEnergy = giveEnergy;
     }
 }

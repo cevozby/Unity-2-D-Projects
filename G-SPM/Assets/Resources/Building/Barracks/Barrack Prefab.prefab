@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6324451277152634100}
   - component: {fileID: 6572496367422736390}
-  - component: {fileID: 7030240813236907191}
   m_Layer: 0
   m_Name: Barrack Prefab
   m_TagString: Building
@@ -48,20 +47,6 @@ MonoBehaviour:
   area:
     m_Position: {x: 0, y: 0, z: 0}
     m_Size: {x: 4, y: 4, z: 1}
---- !u!114 &7030240813236907191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5169100440049531580}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c69f97eaadf47eb41a4c6800cceff80d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  informationMenu: {fileID: 0}
-  selectedObject: {fileID: 0}
 --- !u!1 &7227492204322986180
 GameObject:
   m_ObjectHideFlags: 0

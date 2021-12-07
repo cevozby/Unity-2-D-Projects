@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 
@@ -20,9 +21,17 @@ public class GridBuildingSystem : MonoBehaviour
 
     public Transform buildingPlace;
 
-    public int energy;
-
+    public int giveEnergy, totalEnergy = 0, count = 0, x_size, y_size;
+    public bool checkEnergy;
+    public bool barrackSelected = false, powerPlantSelected = false;
     public GameObject warningText;
+
+    Construction barrackBuild = new Barrack("barrack", 4, 4, false);
+    Construction powerPlantBuild = new PowerPlant("PowerPlant", 2, 3, 2);
+
+    Vector3 soldierLocation;
+
+
 
     #region Unity Methods
 
@@ -38,6 +47,9 @@ public class GridBuildingSystem : MonoBehaviour
         tileBases.Add(TileType.White, Resources.Load<TileBase>(path: tilePath + "white"));
         tileBases.Add(TileType.Green, Resources.Load<TileBase>(path: tilePath + "green"));
         tileBases.Add(TileType.Red, Resources.Load<TileBase>(path: tilePath + "red"));
+
+        giveEnergy = powerPlantBuild.giveEnergy;
+        checkEnergy = barrackBuild.checkEnergy;
     }
 
     private void Update()
@@ -45,6 +57,11 @@ public class GridBuildingSystem : MonoBehaviour
         if (!temp)
         {
             return;
+        }
+
+        if (totalEnergy >= 6)
+        {
+            checkEnergy = true;
         }
 
         if (Input.GetMouseButton(0))
@@ -121,28 +138,45 @@ public class GridBuildingSystem : MonoBehaviour
 
     public void InitializeBarrack(GameObject barrack)
     {
-        if(energy >= 6)
+        if(checkEnergy)
         {
             temp = Instantiate(barrack, Vector3.zero, Quaternion.identity, buildingPlace).GetComponent<Building>();
+            barrackSelected = true;
             FollowBuilding();
-            energy -= 6;
+            totalEnergy -= 6;
+            
         }
         else
         {
             StartCoroutine(Warning());
         }
     }
+
     public void InitializePowerPlant(GameObject powerPlant)
     {
         temp = Instantiate(powerPlant, Vector3.zero, Quaternion.identity, buildingPlace).GetComponent<Building>();
+        powerPlantSelected = true;
         FollowBuilding();
-        energy += 2;
+        totalEnergy += giveEnergy;
     }
 
     public void InitializeSoldier(GameObject soldier)
     {
-        temp = Instantiate(soldier, Vector3.zero, Quaternion.identity, buildingPlace).GetComponent<Building>();
-        FollowBuilding();
+        SoldierPlace();
+        temp = Instantiate(soldier, soldierLocation, Quaternion.identity, buildingPlace).GetComponent<Building>();
+        if (temp.CanBePlaced())
+        {
+            temp.Place();
+        }
+        else
+        {
+            SoldierNewPlace();
+            temp = Instantiate(soldier, soldierLocation, Quaternion.identity, buildingPlace).GetComponent<Building>();
+            if (temp.CanBePlaced())
+            {
+                temp.Place();
+            }
+        }
     }
 
     private void ClearArea()
@@ -155,8 +189,9 @@ public class GridBuildingSystem : MonoBehaviour
     public void FollowBuilding()
     {
         ClearArea();
+        PositionControl();
 
-        temp.area.position = gridLayout.WorldToCell(new Vector3(temp.gameObject.transform.position.x -1, temp.gameObject.transform.position.y -1, temp.gameObject.transform.position.z));
+        temp.area.position = gridLayout.WorldToCell(new Vector3(temp.gameObject.transform.position.x - x_size, temp.gameObject.transform.position.y - y_size, temp.gameObject.transform.position.z));
         BoundsInt buildingArea = temp.area;
 
         TileBase[] baseArray = GetTilesBlock(buildingArea, MainTilemap);
@@ -188,7 +223,8 @@ public class GridBuildingSystem : MonoBehaviour
         {
             if (b!= tileBases[TileType.White])
             {
-                Debug.Log("Cannot place here");
+                StartCoroutine(PlaceWarning());
+
                 return false;
             }
         }
@@ -198,7 +234,7 @@ public class GridBuildingSystem : MonoBehaviour
     public void TakeArea(BoundsInt area)
     {
         SetTilesBlock(area, TileType.Empty, TempTilemap);
-        SetTilesBlock(area, TileType.Green, MainTilemap);
+        SetTilesBlock(area, TileType.Empty, MainTilemap);
     }
 
     #endregion
@@ -206,8 +242,57 @@ public class GridBuildingSystem : MonoBehaviour
     IEnumerator Warning()
     {
         warningText.SetActive(true);
+        warningText.GetComponent<Text>().text = "NEED " + (6 - totalEnergy) + " ENERGY";
         yield return new WaitForSeconds(1);
         warningText.SetActive(false);
+    }
+
+    IEnumerator PlaceWarning()
+    {
+        warningText.SetActive(true);
+        warningText.GetComponent<Text>().text = "CANNOT PLACE THÝS AREA";
+        yield return new WaitForSeconds(1);
+        warningText.SetActive(false);
+    }
+
+    void SoldierPlace()
+    {
+        if (MouseManager.current.barrackControl)
+        {
+            soldierLocation = new Vector3(MouseManager.current.selectedObject.transform.position.x - 3, MouseManager.current.selectedObject.transform.position.y - 3, 0);
+        }
+    }
+    void SoldierNewPlace()
+    {
+        count++;
+        if (count % 3 != 0)
+        {
+            soldierLocation = new Vector3(soldierLocation.x + 1, soldierLocation.y, soldierLocation.z);
+        }
+        else
+        {
+            soldierLocation = new Vector3(soldierLocation.x - 3, soldierLocation.y + 1, soldierLocation.z);
+        }
+    }
+    public void PositionControl()
+    {
+        if ((temp.gameObject.transform.position.x / 2) > 1)
+        {
+            x_size = 1;
+        }
+        else
+        {
+            x_size = 0;
+        }
+        if ((temp.gameObject.transform.position.y / 2) > 1)
+        {
+            y_size = 1;
+        }
+        else
+        {
+            y_size = 0;
+        }
+
     }
 }
 
